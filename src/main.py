@@ -1,11 +1,19 @@
+from typing import List
+
 from fastapi import FastAPI
 
+from src.models import Game
+
 app = FastAPI()
+games: list[Game] = []
 
-@app.get("/")
-def read_root() -> dict[str, str]:
-    return {"Hello": "World"}
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None) -> dict[str, int | str | None]:
-    return {"item_id": item_id, "q": q}
+@app.post("/games")
+def post_game(game: Game) -> dict[str, str | Game]:
+    games.append(game)
+    return {"message": "Success", "game": games[-1]}
+
+
+@app.get("/games")
+def read_all_games() -> dict[str, List[Game]]:
+    return {"games": games}
