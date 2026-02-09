@@ -1,4 +1,3 @@
-from typing import List
 
 from fastapi import FastAPI
 
@@ -15,5 +14,5 @@ def post_game(game: Game) -> dict[str, str | Game]:
 
 
 @app.get("/games")
-def read_all_games() -> dict[str, List[Game]]:
+def read_all_games() -> dict[str, list[Game]]:
     return {"games": games}
