@@ -12,3 +12,10 @@ class Game(BaseModel):
         if self.min_players > self.max_players:
             raise ValueError("Minimum players must be less than or equal to max players")
         return self
+
+
+class Player(BaseModel):
+    username: str = Field(min_length=4, max_length=20)
+    email: str = Field(min_length=4, max_length=50)
+    first_name: str = Field(min_length=1, max_length=30)
+    last_name: str = Field(min_length=1, max_length=30)
