@@ -93,7 +93,7 @@ def get_game_by_owner(
     return GameRead(**game.model_dump(), owners=[p.username for p in owners])
 
 
-@app.post("/player", status_code=201, response_model=PlayerRead)
+@app.post("/players", status_code=201, response_model=PlayerRead)
 def post_player(session: SessionDep, player: PlayerCreate) -> PlayerRead:
     existing = crud.get_player_by_username(session, player.username)
 
@@ -126,7 +126,7 @@ def get_all_players(session: SessionDep) -> Sequence[PlayerRead] | None:
     return all_players_with_games
 
 
-@app.get("/player/{username}", response_model=PlayerRead)
+@app.get("/players/{username}", response_model=PlayerRead)
 def get_player_by_username(
     session: SessionDep,
     username: Annotated[str, Path(title="The username of the player to find")],

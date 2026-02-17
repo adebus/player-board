@@ -8,3 +8,4 @@ htmlcov/
 .vscode/*.code-workspace
 data/
 *.db
+context/

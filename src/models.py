@@ -1,6 +1,6 @@
 from typing import Self
 
-from pydantic import model_validator
+from pydantic import EmailStr, model_validator
 from sqlmodel import Field, SQLModel
 
 
@@ -31,7 +31,7 @@ class GameRead(GameBase):
 
 class PlayerBase(SQLModel):
     username: str = Field(min_length=4, max_length=20)
-    email: str = Field(min_length=4, max_length=50)
+    email: EmailStr = Field(min_length=4, max_length=50)
     first_name: str = Field(min_length=1, max_length=30)
     last_name: str = Field(min_length=1, max_length=30)
 
@@ -50,8 +50,8 @@ class PlayerRead(PlayerBase):
 
 
 class GameOwnerBase(SQLModel):
-    game_id: int | None = Field(foreign_key="game.id")
-    owner_id: int | None = Field(foreign_key="player.id")
+    game_id: int = Field(foreign_key="game.id")
+    owner_id: int = Field(foreign_key="player.id")
 
 
 class GameOwner(GameOwnerBase, table=True):

@@ -1,26 +1,7 @@
-from typing import Any
-
-import pytest
 from fastapi.testclient import TestClient
 
-from src.main import app, games, players
 
-client = TestClient(app)
-
-
-@pytest.fixture
-def empty_games() -> Any:
-    games.clear()
-    return games
-
-
-@pytest.fixture
-def empty_players() -> Any:
-    players.clear()
-    return players
-
-
-def test_post_game(empty_games: Any, empty_players: Any) -> None:
+def test_post_game(test_client: TestClient) -> None:
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -35,14 +16,23 @@ def test_post_game(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
-    response = client.post("/games", json=test_game)
+    result_game: dict[str, str | int | list[str | int]] = {
+        "name": test_game["name"],
+        "min_players": test_game["min_players"],
+        "max_players": test_game["max_players"],
+        "id": 1,
+        "owners": [test_game["owner"]],
+    }
+
+    test_client.post("/players", json=test_player)
+    response = test_client.post("/games", json=test_game)
 
     assert response.status_code == 201
-    assert response.json() == {"message": "success", "game": test_game}
+    assert response.json() == result_game
 
 
-def test_post_game_no_player(empty_games: Any, empty_players: Any) -> None:
+def test_post_game_no_player(test_client: TestClient) -> None:
+
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -50,12 +40,12 @@ def test_post_game_no_player(empty_games: Any, empty_players: Any) -> None:
         "owner": "Test",
     }
 
-    response = client.post("/games", json=test_game)
+    response = test_client.post("/games", json=test_game)
 
-    assert response.status_code == 409
+    assert response.status_code == 404
 
 
-def test_post_game_no_player_2(empty_games: Any, empty_players: Any) -> None:
+def test_post_game_no_player_2(test_client: TestClient) -> None:
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -69,14 +59,14 @@ def test_post_game_no_player_2(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
+    test_client.post("/players", json=test_player)
 
-    response = client.post("/games", json=test_game)
+    response = test_client.post("/games", json=test_game)
 
-    assert response.status_code == 409
+    assert response.status_code == 404
 
 
-def test_post_duplicate_game(empty_games: Any, empty_players: Any) -> None:
+def test_post_duplicate_game(test_client: TestClient) -> None:
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -90,14 +80,14 @@ def test_post_duplicate_game(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
-    client.post("/games", json=test_game)
-    response = client.post("/games", json=test_game)
+    test_client.post("/players", json=test_player)
+    test_client.post("/games", json=test_game)
+    response = test_client.post("/games", json=test_game)
 
     assert response.status_code == 409
 
 
-def test_post_invalid_players(empty_games: Any, empty_players: Any) -> None:
+def test_post_invalid_players(test_client: TestClient) -> None:
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 4,
@@ -111,14 +101,14 @@ def test_post_invalid_players(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
+    test_client.post("/players", json=test_player)
 
-    response = client.post("/games", json=test_game)
+    response = test_client.post("/games", json=test_game)
 
     assert response.status_code == 422
 
 
-def test_get_game_1(empty_games: Any, empty_players: Any) -> None:
+def test_get_game_1(test_client: TestClient) -> None:
     test_game: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -132,16 +122,24 @@ def test_get_game_1(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
-    client.post("/games", json=test_game)
+    result_game: dict[str, str | int | list[str | int]] = {
+        "name": test_game["name"],
+        "min_players": test_game["min_players"],
+        "max_players": test_game["max_players"],
+        "id": 1,
+        "owners": [test_game["owner"]],
+    }
 
-    response = client.get("/games")
+    test_client.post("/players", json=test_player)
+    test_client.post("/games", json=test_game)
+
+    response = test_client.get("/games")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "success", "games": [test_game]}
+    assert response.json() == [result_game]
 
 
-def test_get_game_2(empty_games: Any, empty_players: Any) -> None:
+def test_get_game_2(test_client: TestClient) -> None:
     test_game_1: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -161,17 +159,40 @@ def test_get_game_2(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
-    client.post("/games", json=test_game_1)
-    client.post("/games", json=test_game_2)
+    result_game_1: dict[str, str | int | list[str | int]] = {
+        "name": test_game_1["name"],
+        "min_players": test_game_1["min_players"],
+        "max_players": test_game_1["max_players"],
+        "id": 1,
+        "owners": [test_game_1["owner"]],
+    }
 
-    response = client.get("/games")
+    result_game_2: dict[str, str | int | list[str | int]] = {
+        "name": test_game_2["name"],
+        "min_players": test_game_2["min_players"],
+        "max_players": test_game_2["max_players"],
+        "id": 2,
+        "owners": [test_game_2["owner"]],
+    }
+
+    test_client.post("/players", json=test_player)
+    test_client.post("/games", json=test_game_1)
+    test_client.post("/games", json=test_game_2)
+
+    response = test_client.get("/games")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "success", "games": [test_game_1, test_game_2]}
+    assert response.json() == [result_game_1, result_game_2]
 
 
-def test_get_specific_game(empty_games: Any, empty_players: Any) -> None:
+def test_read_all_games_no_games(test_client: TestClient) -> None:
+    response = test_client.get("/games")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_specific_game(test_client: TestClient) -> None:
     test_game_1: dict[str, str | int] = {
         "name": "Everdell",
         "min_players": 1,
@@ -191,23 +212,25 @@ def test_get_specific_game(empty_games: Any, empty_players: Any) -> None:
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
-    client.post("/games", json=test_game_1)
-    client.post("/games", json=test_game_2)
+    result_game_2: dict[str, str | int | list[str | int]] = {
+        "name": test_game_2["name"],
+        "min_players": test_game_2["min_players"],
+        "max_players": test_game_2["max_players"],
+        "id": 2,
+        "owners": [test_game_2["owner"]],
+    }
 
-    response = client.get("/games/Test/Gloomhaven")
+    test_client.post("/players", json=test_player)
+    test_client.post("/games", json=test_game_1)
+    test_client.post("/games", json=test_game_2)
+
+    response = test_client.get(f"/games/{test_player['username']}/{test_game_2['name']}")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "success", "game": test_game_2}
+    assert response.json() == result_game_2
 
 
-def test_get_specific_game_failure(empty_games: Any, empty_players: Any) -> None:
-    test_game_1: dict[str, str | int] = {
-        "name": "Everdell",
-        "min_players": 1,
-        "max_players": 4,
-        "owner": "Test",
-    }
+def test_get_game_by_owner_no_game(test_client: TestClient) -> None:
     test_game_2: dict[str, str | int] = {
         "name": "Gloomhaven",
         "min_players": 1,
@@ -221,45 +244,21 @@ def test_get_specific_game_failure(empty_games: Any, empty_players: Any) -> None
         "last_name": "Last",
     }
 
-    client.post("/player", json=test_player)
+    test_client.post("/players", json=test_player)
+    test_client.post("/games", json=test_game_2)
 
-    client.post("/games", json=test_game_1)
-    client.post("/games", json=test_game_2)
-
-    response = client.get("/games/Tauvix/Clank")
+    response = test_client.get(f"/games/{test_player['username']}/Clank")
 
     assert response.status_code == 404
 
 
-def test_post_players(empty_players: Any, empty_games: Any) -> None:
-    test_player: dict[str, str] = {
-        "username": "Test",
-        "email": "test@test.com",
-        "first_name": "First",
-        "last_name": "Last",
+def test_get_game_by_owner_not_owned_by_owner(test_client: TestClient) -> None:
+    test_game_2: dict[str, str | int] = {
+        "name": "Gloomhaven",
+        "min_players": 1,
+        "max_players": 4,
+        "owner": "Test1",
     }
-
-    response = client.post("/player", json=test_player)
-
-    assert response.status_code == 201
-    assert response.json() == {"message": "success", "player": test_player}
-
-
-def test_post_duplicate_player(empty_players: Any, empty_games: Any) -> None:
-    test_player: dict[str, str] = {
-        "username": "Test",
-        "email": "test@test.com",
-        "first_name": "First",
-        "last_name": "Last",
-    }
-
-    client.post("/player", json=test_player)
-    response = client.post("/player", json=test_player)
-
-    assert response.status_code == 409
-
-
-def test_get_all_players(empty_players: Any, empty_games: Any) -> None:
     test_player_1: dict[str, str] = {
         "username": "Test1",
         "email": "test1@test.com",
@@ -273,16 +272,122 @@ def test_get_all_players(empty_players: Any, empty_games: Any) -> None:
         "last_name": "Last2",
     }
 
-    client.post("/player", json=test_player_1)
-    client.post("/player", json=test_player_2)
+    test_client.post("/players", json=test_player_1)
+    test_client.post("/players", json=test_player_2)
+    test_client.post("/games", json=test_game_2)
 
-    response = client.get("/players")
+    response = test_client.get(f"/games/{test_player_2['username']}/{test_game_2['name']}")
+
+    assert response.status_code == 404
+
+
+def test_get_specific_game_failure(test_client: TestClient) -> None:
+    test_game_1: dict[str, str | int] = {
+        "name": "Everdell",
+        "min_players": 1,
+        "max_players": 4,
+        "owner": "Test",
+    }
+    test_game_2: dict[str, str | int] = {
+        "name": "Gloomhaven",
+        "min_players": 1,
+        "max_players": 4,
+        "owner": "Test",
+    }
+    test_player: dict[str, str] = {
+        "username": "Test",
+        "email": "test@test.com",
+        "first_name": "First",
+        "last_name": "Last",
+    }
+
+    test_client.post("/players", json=test_player)
+
+    test_client.post("/games", json=test_game_1)
+    test_client.post("/games", json=test_game_2)
+
+    response = test_client.get("/games/Test2/Clank")
+
+    assert response.status_code == 404
+
+
+def test_post_players(test_client: TestClient) -> None:
+    test_player: dict[str, str] = {
+        "username": "Test",
+        "email": "test@test.com",
+        "first_name": "First",
+        "last_name": "Last",
+    }
+
+    response = test_client.post("/players", json=test_player)
+
+    assert response.status_code == 201
+    assert response.json() == {**test_player, "id": 1, "games": []}
+
+
+def test_post_duplicate_player(test_client: TestClient) -> None:
+    test_player: dict[str, str] = {
+        "username": "Test",
+        "email": "test@test.com",
+        "first_name": "First",
+        "last_name": "Last",
+    }
+
+    test_client.post("/players", json=test_player)
+    response = test_client.post("/players", json=test_player)
+
+    assert response.status_code == 409
+
+
+def test_get_all_players(test_client: TestClient) -> None:
+    test_player_1: dict[str, str] = {
+        "username": "Test1",
+        "email": "test1@test.com",
+        "first_name": "First1",
+        "last_name": "Last1",
+    }
+    test_player_2: dict[str, str] = {
+        "username": "Test2",
+        "email": "test2@test.com",
+        "first_name": "First2",
+        "last_name": "Last2",
+    }
+
+    response_player_1: dict[str, str | int | list[str | None]] = {
+        "username": test_player_1["username"],
+        "email": test_player_1["email"],
+        "first_name": test_player_1["first_name"],
+        "last_name": test_player_1["last_name"],
+        "id": 1,
+        "games": [],
+    }
+
+    response_player_2: dict[str, str | int | list[str | None]] = {
+        "username": test_player_2["username"],
+        "email": test_player_2["email"],
+        "first_name": test_player_2["first_name"],
+        "last_name": test_player_2["last_name"],
+        "id": 2,
+        "games": [],
+    }
+
+    test_client.post("/players", json=test_player_1)
+    test_client.post("/players", json=test_player_2)
+
+    response = test_client.get("/players")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "success", "players": [test_player_1, test_player_2]}
+    assert response.json() == [response_player_1, response_player_2]
 
 
-def test_get_player_by_username(empty_players: Any, empty_games: Any) -> None:
+def test_get_all_players_no_players(test_client: TestClient) -> None:
+    response = test_client.get("/players")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_get_player_by_username(test_client: TestClient) -> None:
     test_player_1: dict[str, str] = {
         "username": "Test1",
         "email": "test1@test.com",
@@ -290,15 +395,24 @@ def test_get_player_by_username(empty_players: Any, empty_games: Any) -> None:
         "last_name": "Last1",
     }
 
-    client.post("/player", json=test_player_1)
+    response_player_1: dict[str, str | int | list[str | None]] = {
+        "username": test_player_1["username"],
+        "email": test_player_1["email"],
+        "first_name": test_player_1["first_name"],
+        "last_name": test_player_1["last_name"],
+        "id": 1,
+        "games": [],
+    }
 
-    response = client.get("/player/Test1")
+    test_client.post("/players", json=test_player_1)
+
+    response = test_client.get("/players/Test1")
 
     assert response.status_code == 200
-    assert response.json() == {"message": "success", "player": test_player_1}
+    assert response.json() == response_player_1
 
 
-def test_get_invalid_player_by_username(empty_players: Any, empty_games: Any) -> None:
+def test_get_invalid_player_by_username(test_client: TestClient) -> None:
     test_player_1: dict[str, str] = {
         "username": "Test1",
         "email": "test1@test.com",
@@ -306,8 +420,8 @@ def test_get_invalid_player_by_username(empty_players: Any, empty_games: Any) ->
         "last_name": "Last1",
     }
 
-    client.post("/player", json=test_player_1)
+    test_client.post("/players", json=test_player_1)
 
-    response = client.get("/player/Test2")
+    response = test_client.get("/players/Test2")
 
     assert response.status_code == 404
