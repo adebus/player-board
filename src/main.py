@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import FastAPI
 
 from .database import create_db_and_tables
-from .models import game, player  # noqa: F401
+from .models import game, player, session  # noqa: F401
 from .routers import games, players
 
 
