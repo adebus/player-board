@@ -10,3 +10,5 @@ data/
 *.db
 context/
 .claude/
+.vscode/settings.local.json
+.python-version

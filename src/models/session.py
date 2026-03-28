@@ -8,7 +8,7 @@ from sqlmodel import Field, SQLModel
 class GameSessionBase(SQLModel):
     start_time: datetime | None = Field(default=None)
     location: str = Field(min_length=1, max_length=200)
-    notes: str | None = Field(max_length=500)
+    notes: str | None = Field(default= None, max_length=500)
 
 
 class GameSession(GameSessionBase, table=True):

@@ -6,7 +6,7 @@ from fastapi import FastAPI
 
 from .database import create_db_and_tables
 from .models import game, player, session  # noqa: F401
-from .routers import games, players
+from .routers import games, players, sessions
 
 
 @asynccontextmanager
@@ -19,3 +19,4 @@ app = FastAPI(lifespan=lifespan)
 
 app.include_router(games.router)
 app.include_router(players.router)
+app.include_router(sessions.router)

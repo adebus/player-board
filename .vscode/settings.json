@@ -5,6 +5,7 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "ruff.enable": true,
+    "ruff.interpreter": ["${workspaceFolder}/.venv/bin/python"],
     "[python]": {
         "editor.defaultFormatter": "charliermarsh.ruff",
         "editor.formatOnSave": true,
@@ -12,5 +13,6 @@
             "source.fixAll": "explicit",
             "source.organizeImports": "explicit"
         }
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:venv"
 }
