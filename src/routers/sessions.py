@@ -72,10 +72,19 @@ def get_game_session_by_id(
     return model_session.GameSessionRead(**db_game_session.model_dump())
 
 
-# POST /sessions/{id}/players
-# Inputs: id, [players]
-# Returns: [PlayerRead]
+# POST /sessions/players
+# Inputs: [GameSessionPlayerCreate]
+# Returns: [GameSessionPlayerRead]
 # Validation: any players provided must exist
+@router.post("/players", status_code=201, response_model=model_session.GameSessionPlayerRead)
+def post_session_player(
+    session: SessionDep, game_session_player_in: model_session.GameSessionPlayerCreate
+) -> model_session.GameSessionPlayerRead:
+
+    added_player = crud_session.add_player_to_session(session, game_session_player_in)
+
+    return model_session.GameSessionPlayerRead(**added_player.model_dump())
+
 
 # GET /sessions/{id}/players
 # input: id

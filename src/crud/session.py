@@ -81,12 +81,10 @@ def get_all_game_sessions(session: Session) -> Sequence[model_session.GameSessio
 
 
 def add_player_to_session(
-    session: Session, game_session_id: int, player_id: int
+    session: Session, game_player_in: model_session.GameSessionPlayerCreate
 ) -> model_session.GameSessionPlayer:
 
-    db_game_session_player = model_session.GameSessionPlayer.model_validate(
-        {"game_session_id": game_session_id, "player_id": player_id}
-    )
+    db_game_session_player = model_session.GameSessionPlayer.model_validate(game_player_in)
 
     session.add(db_game_session_player)
     session.commit()

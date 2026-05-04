@@ -14,5 +14,5 @@
             "source.organizeImports": "explicit"
         }
     },
-    "python-envs.defaultEnvManager": "ms-python.python:venv"
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }
